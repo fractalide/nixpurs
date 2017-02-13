@@ -28,10 +28,11 @@ safeName unsafeName = if unsafeName == "assert"
 
 packagesToNix :: Map Text Package -> Text
 packagesToNix pkgs = Text.intercalate "\n"
-  [ "{ pkgs, callPackage }:"
+  [ "{"
   , ""
-  , "self: {"
+  , "allPureLibs = self: super: rec {"
   , mappend "  " $ Text.replace "\n" "\n  " $ Map.foldMapWithKey pkgToField pkgs
+  , "}"
   , "}"
   ]
 
@@ -41,11 +42,11 @@ pkgToField name pkg = name <> " = " <> pkgToNix name pkg <> " {};\n"
 pkgToNix :: Text -> Package -> Text
 pkgToNix name pkg = Text.intercalate "\n"
   [ "callPackage"
-  , "  ({ " <> Text.intercalate ", " ("mkDerivation" : pkg^.dependencies) <> " }:"
+  , "  ({ buildPurescriptLib, allPureLibs }:"
   , "    mkDerivation {"
   , "      pname = \"" <> name <> "\";"
   , "      version = \"" <> (pkg^.version) <> "\";"
-  , "      purescriptDepends = [ " <> Text.intercalate " " (pkg^.dependencies) <> " ];"
+  , "      purescriptDepends = with allPureLibs; [ " <> Text.intercalate " " (pkg^.dependencies) <> " ];"
   , "      src = pkgs.fetchgit {"
   , "        url = " <> (pkg^.repo) <> ";"
   , "        sha256 = null;"

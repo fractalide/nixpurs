@@ -32,7 +32,7 @@ packagesToNix pkgs = Text.intercalate "\n"
   , ""
   , "allPureLibs = self: super: rec {"
   , mappend "  " $ Text.replace "\n" "\n  " $ Map.foldMapWithKey pkgToField pkgs
-  , "}"
+  , "};"
   , "}"
   ]
 
